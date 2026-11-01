@@ -1,72 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEROBRIEF - Operational Dispatch Suite</title>
+    <style>
+        :root {
+            --bg-light: #f4f3ef;        /* Crisp, clear parchment background */
+            --panel-bg: #ffffff;        /* Solid white paper panels */
+            --text-black: #111111;      /* Deep black typewriter ink text */
+            --accent-green: #228b22;    /* Clear mechanical green line accents */
+            --border-line: 1px solid #228b22;
+            --fr24-dark: #1a1a1a;       /* FlightRadar24 dark tactical radar background */
+        }
+
+        body {
+            font-family: "Courier New", Courier, monospace;
+            font-weight: bold;          /* Makes the typewriter font pop and look very clear */
+            background-color: var(--bg-light);
+            color: var(--text-black);
+            margin: 0;
+            padding: 15px;
+            overflow-x: hidden;
+            line-height: 1.4;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px double var(--accent-green); /* Classic old printer double-underline */
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        h1 { margin: 0; font-size: 26px; color: var(--text-black); letter-spacing: 2px; }
+        .badge { border: var(--border-line); color: var(--accent-green); padding: 4px 8px; font-size: 12px; }
+
+        /* TAB BAR STYLING */
+        .tab-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: var(--border-line);
+            padding-bottom: 5px;
+        }
+        
+        .tab-button {
+            background: var(--panel-bg);
+            color: var(--text-black);
+            border: var(--border-line);
+            padding: 8px 16px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+        
+        .tab-button.active {
+            background: var(--accent-green);
+            color: var(--bg-light);
+        }
+
+        /* PAGE VIEWS */
+        .page-view {
+            display: none;
+        }
+        
+        .page-view.active {
+            display: block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: var(--border-line); /* Clean green grid lines around panels */
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .panel-title { 
+            font-size: 14px; 
+            color: var(--accent-green); 
+            margin-bottom: 15px; 
+            border-bottom: var(--border-line);
+            padding-bottom: 5px;
+        }
+        
+        .wallet-amount { font-size: 32px; margin: 10px 0; }
+        
+        .input-group { display: flex; gap: 10px; margin-top: 10px; }
+        input {
+            flex: 1;
+            background: var(--panel-bg);
+            border: var(--border-line);
+            color: var(--text-black);
+            padding: 10px;
+            font-family: inherit;
+            font-weight: bold;
+        }
+        
+        button {
+            background: var(--panel-bg);
+            color: var(--text-black);
+            border: 2px solid var(--text-black);
+            padding: 10px 15px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background: var(--text-black);
+            color: var(--bg-light);
+        }
+
+        /* Floating Pilot EFB Tablet Framework */
+        .floating-tablet {
+            position: absolute;
+            top: 220px;
+            left: 40px;
+            width: 320px;
+            background: var(--panel-bg);
+            border: 3px solid var(--text-black); /* Standout heavy border for the tablet */
+            z-index: 9999;
+        }
+        .tablet-header { 
+            background: var(--text-black); 
+            color: var(--bg-light);
+            padding: 8px; 
+            cursor: move; 
+            font-size: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+        }
+        .tablet-body { padding: 12px; font-size: 13px; border-top: var(--border-line); }
+
+        /* FLIGHTRADAR24 MAP STYLING OVERRIDE */
+        #radarMapContainer { 
+            width: 100%; 
+            height: 500px; /* Taller area dedicated to standard radar layouts */
+            background-color: var(--fr24-dark);
+            border: 3px solid var(--text-black);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fr24-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .fr24-aircraft {
+            position: absolute;
+            color: #ffcc00; /* Distinct bright FlightRadar24 gold/yellow target aircraft */
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));
+        }
+        .fr24-aircraft:hover {
+            transform: scale(1.2);
+        }
+
+        .fr24-label {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.85);
+            color: #ffffff;
+            border: 1px solid #ffcc00;
+            padding: 4px 6px;
+            font-size: 10px;
+            font-family: inherit;
+            white-space: nowrap;
+            pointer-events: none;
+            margin-top: -25px;
+            margin-left: 20px;
+        }
+
+        .telex-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .telex-table th, .telex-table td {
+            border: var(--border-line);
+            padding: 8px;
+            text-align: left;
+        }
+        .telex-table th { background: rgba(34, 139, 34, 0.1); }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(34, 139, 34, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>[AEROBRIEF FLIGHT LOG SYSTEM]</h1>
+        <span class="badge">SYS STATUS: ACTIVE / BETA 1.0</span>
+    </header>
+
+    <!-- TELEX INDEX TAB SELECTION BAR -->
+    <div class="tab-bar">
+        <button class="tab-button active" onclick="switchPage('hq-page', this)">[01//HQ_OFFICE]</button>
+        <button class="tab-button" onclick="switchPage('radar-page', this)">[02//LIVE_RADAR]</button>
+        <button class="tab-button" onclick="switchPage('logbook-page', this)">[03//LOGBOOK_HISTORY]</button>
+        <button class="tab-button" onclick="switchPage('ifatc-page', this)">[04//IFATC_RECRUIT]</button>
+    </div>
+
+    <!-- FLOATING PILOT EFB TABLET -->
+    <div class="floating-tablet" id="pilotTablet">
+        <div class="tablet-header" id="tabletDragArea">
+            <span>:: ELECTRONIC FLIGHT BAG (EFB) ::</span>
+            <span style="color: red; cursor:pointer;" onclick="document.getElementById('pilotTablet').style.display='none'">[X]</span>
+        </div>
+        <div class="tablet-body">
+            <strong>ASSIGNED EXPLORER FLEET:</strong>
+            <p>- Piper PA-28 Cherokee (ACTIVE)</p>
+            <button onclick="window.startAudioChannel()" style="width:100%;">RUN MASTER SYSTEM SOUND CHECK</button>
+        </div>
+    </div>
+
+    <!-- PAGE VIEW 1: HQ OFFICE & DISPATCH LOGISTICS -->
+    <div id="hq-page" class="page-view active">
+        <div class="grid">
+            <!-- CAREER MODE & CORPORATE LEDGER -->
+            <div class="panel">
+                <div class="panel-title">01 // VIRTUAL AIRLINE ACCOUNTING & PAYROLL</div>
+                <div>CORPORATE VA RESERVES BALANCE:</div>
+                <div class="wallet-amount" id="vaVaultDisplay" style="color: var(--accent-green);">£500,000.00</div>
+                <hr style="border: 0; border-top: var(--border-line); margin: 15px 0;">
+                <div>PILOT BANK MONTHLY GUARANTEE:</div>
+                <div style="font-size: 24px;" id="balanceDisplay">£10,000.00</div>
+            </div>
+
+            <!-- SIMBRIEF CORE DISPATCH PANEL -->
+            <div class="panel">
+                <div class="panel-title">02 // SIMBRIEF AUTOMATED TELEX INCOMING LINK</div>
+                <div class="input-group">
+                    <input type="text" id="sbUser" placeholder="ENTER PILOT FLIGHT DISPATCH ID">
+                    <button onclick="importSimBriefData()">SYNC FP</button>
+                </div>
+                <div id="routeStatus" style="margin-top: 15px; font-size: 13px; color: #555;">AWAITING LOG ENGINES BRIEFING REQ...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE VIEW 2: FLIGHTRADAR24 HIGH-CONTRAST INTERACTIVE RADAR -->
+    <div id="radar-page" class="page-view">
+        <div class="panel">
+            <div class="panel-title">02 // FLIGHTRADAR24 TACTICAL ATC INTERCEPT AIRSPACE</div>
+            <div id="radarMapContainer">
+                <div class="fr24-grid"></div>
+                <div class="fr24-aircraft" style="top: 45%; left: 48%; transform: rotate(45deg);" onclick="window.triggerRadarPopup()">✈</div>
+                <div class="fr24-label" style="top: 45%; left: 48%;">AB-992<br>FL360 / 280KT</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE VIEW 3: ARCHIVED LOGBOOK HISTORY -->
+    <div id="logbook-page" class="page-view">
+        <div class="panel">
+            <div class="panel-title">03 // PILOT FLIGHT HISTORICAL DATA LOGBOOK</div>
+            <table class="telex-table">
+                <thead>
+                    <tr>
+                        <th>DATE</th>
+                        <th>ROUTE</th>
+                        <th>TOUCHDOWN VS</th>
+                        <th>PROFILE STATUS</th>
+                        <th>NET PAYROLL BALANCE</th>
+                    </tr>
+                </thead>
+                <tbody id="logbookTableBody">
+                    <!-- Loaded dynamically via script engine -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PAGE VIEW 4: IFATC RECRUIT helper CHECKLIST -->
+    <div id="ifatc-page" class="page-view">
+        <div class="panel">
+            <div class="panel-title">04 // IFATC PRACTICAL TRAINING LOG & EVALUATION CRITERIA</div>
+            <p style="font-size: 13px; color: #555;">>> FOLLOW EXAM MARKERS TO REDUCE SANCTION VIOLATIONS:</p>
+            <div id="ifatcChecklistContainer">
+                <!-- Loaded dynamically via script engine -->
+            </div>
+        </div>
+    </div>
+    <!-- APPLICATION BOOT MODULE -->
     <script type="module">
         import { AeroBriefCareer } from './career.js';
         import { AeroBriefPlanner } from './simbrief.js';
+        import { VirtualAirlineManager } from './va-economy.js';
+        import { initializeFloatingTablet } from './tablet-overlay.js';
+        import { AeroBriefMapEngine } from './map-hud.js';
+        import { AeroBriefAudioController } from './audio-engine.js';
+        import { AeroBriefLogbook } from './logbook.js';
+        import { IfatcRecruitHelper } from './ifatc-helper.js';
 
-        // Initialize your elite application modules
-        const careerEngine = new AeroBriefCareer();
+        // Instantiate premium structural class objects
+        const vaManager = new VirtualAirlineManager("Abdi Air Virtual");
+        const mapEngine = new AeroBriefMapEngine("radarMapContainer");
+        const audioEngine = new AeroBriefAudioController();
         const flightPlanner = new AeroBriefPlanner();
+        const logbookEngine = new AeroBriefLogbook();
+        const ifatcEngine = new IfatcRecruitHelper();
 
-        // DOM elements mapping
-        const sbInput = document.getElementById('sbUser');
-        const routeStatus = document.getElementById('routeStatus');
-        const balanceDisplay = document.getElementById('balanceDisplay');
-        const finesDisplay = document.getElementById('finesDisplay');
-        const logDisplay = document.getElementById('logDisplay');
-        const phaseDisplay = document.getElementById('phaseDisplay');
-        const announcementText = document.getElementById('announcementText');
-        const comfortDisplay = document.getElementById('comfortDisplay');
+        // Initialize user workspace components
+        initializeFloatingTablet("pilotTablet", "tabletDragArea");
+        mapEngine.initLocalRadar();
+        renderLogbook();
+        renderIfatcChecklist();
 
-        // Bind the SimBrief importer directly to your UI button
-        window.importSimBriefData = async function() {
-            const username = sbInput.value;
-            routeStatus.innerHTML = "⏳ Connecting to SimBrief servers...";
-            
-            const flightPlan = await flightPlanner.importFlightPlan(username);
-            
-            if (flightPlan) {
-                routeStatus.innerHTML = `
-                    🟢 <strong>Flight Plan Loaded!</strong><br>
-                    <strong>Callsign:</strong> ${flightPlan.callsign} (${flightPlan.aircraftType})<br>
-                    <strong>Route:</strong> ${flightPlan.originICAO} ➔ ${flightPlan.destinationICAO}<br>
-                    <strong>Cruise:</strong> FL${flightPlan.cruiseAltitudeFL / 100}<br>
-                    <strong>ToD Fix:</strong> ${flightPlan.todWaypoint}
-                `;
-            } else {
-                routeStatus.innerHTML = "❌ Failed to retrieve dispatch data.";
-            }
+        /**
+         * Monospace Telex View Controller
+         * Handles routing swaps across multi-tab configurations
+         */
+        window.switchPage = function(pageId, buttonElement) {
+            document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            buttonElement.classList.add('active');
         };
 
-        // Simulated telemetry triggers to verify the career calculation architecture
-        window.triggerPhaseTest = function(phase) {
-            if (phase === 'CLIMB') {
-                // Scenario: Pilot climbs past 10,000 feet but is speeding at 280 knots
-                careerEngine.checkPerformanceViolation(9500, 280, 1.0);
-                
-                phaseDisplay.innerText = "CLIMB (Passing 10,000ft)";
-                announcementText.innerHTML = "🎵 <strong>*Boeing Tritone Chime*</strong><br>'Ladies and gentlemen, we have cleared 10,000 feet. You may now use approved electronic devices.'";
-                
-                updateUIElements();
-            } else if (phase === 'DESCENT') {
-                // Scenario: Hard landing at -450 FPM
-                const landingBonus = careerEngine.evaluateLanding(-450);
-                const financialSummary = careerEngine.calculateFinalPaycheck(landingBonus);
-                
-                phaseDisplay.innerText = "LANDING / TAXI-IN";
-                announcementText.innerHTML = "🎵 <strong>*Airbus Two-Tone Chime*</strong><br>'Cabin crew, please secure the cabin for arrival. Welcome to your destination.'";
-                
-                balanceDisplay.innerText = `£${financialSummary.netBankDeposit.toLocaleString()}`;
-                comfortDisplay.innerText = `${financialSummary.passengerSatisfaction}%`;
-                updateUIElements();
-            }
-        };
-
-        function updateUIElements() {
-            finesDisplay.innerText = `£${careerEngine.flightFines.toLocaleString()}`;
-            logDisplay.innerText = careerEngine.flightLog.length > 0 ? careerEngine.flightLog.join(', ') : "None";
-            comfortDisplay.innerText = `${careerEngine.passengerComfort}%`;
-            
-            if (careerEngine.passengerComfort < 80) {
-                comfortDisplay.className = "stat-val val-bad";
-            }
+        /**
+         * Dynamic Telex Data Renderer
+         * Injects flight data items straight into the log layout grid
+         */
+        function renderLogbook() {
+            const container = document.getElementById('logbookTableBody');
+            if(!container) return;
+            container.innerHTML = logbookEngine.flights.map(f => `
+                <tr>
+                    <td>${f.date}</td>
+                    <td>${f.route}</td>
+                    <td>${f.landingVS}</td>
+                    <td>${f.status}</td>
+                    <td style="color: var(--accent-green);">${f.pay}</td>
+                </tr>
+            `).join('');
         }
+
+        /**
+         * IFATC Checklist Event Controller
+         * Toggles check states and tracks examiner requirements
+         */
+        function renderIfatcChecklist() {
+            const container = document.getElementById('ifatcChecklistContainer');
+            if(!container) return;
+            container.innerHTML = ifatcEngine.testChecklist.map(c => `
+                <div class="checklist-item">
+                    <input type="checkbox" id="chk-${c.id}" ${c.checked ? 'checked' : ''}>
+                    <label for="chk-${c.id}">${c.text}</label>
+                </div>
+            `).join('');
+
+            ifatcEngine.testChecklist.forEach(c => {
+                const checkbox = document.getElementById(`chk-${c.id}`);
+                if(checkbox) {
+                    checkbox.addEventListener('change', () => {
+                        ifatcEngine.toggleCheck(c.id);
+                    });
+                }
+            });
+        }
+
+        /**
+         * Systems Master Audio Quick-Start Hook
+         */
+        window.startAudioChannel = function() {
+            audioEngine.startCabinAmbience('gate');
+            audioEngine.triggerCrewAnnouncement('BOEING', 'welcome_boarding');
+        };
+
+        /**
+         * SimBrief Flight Recovery System Link
+         */
+        window.importSimBriefData = async function() {
+            const username = document.getElementById('sbUser').value;
+            const statusBox = document.getElementById('routeStatus');
+            if (!username) return alert("ENTER VALID DISPATCH ID LOG FIRST");
+
+            statusBox.innerHTML = ">> RECOVERING TELEMETRY MAP DISPATCH STRINGS...";
+            const flightPlan = await flightPlanner.importFlightPlan(username);
+            if(flightPlan) {
+                statusBox.innerHTML = `>> FP RECOVERY OK: ${flightPlan.originICAO} -> ${flightPlan.destinationICAO} [TOD FIX ARMED]`;
+                logbookEngine.addFlightLog(flightPlan.originICAO, flightPlan.destinationICAO, -140, 100, 0, 11000);
+                renderLogbook();
+            }
+        };
     </script>
+</body>
+</html>
