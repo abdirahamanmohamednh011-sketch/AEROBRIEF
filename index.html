@@ -1,0 +1,72 @@
+    <script type="module">
+        import { AeroBriefCareer } from './career.js';
+        import { AeroBriefPlanner } from './simbrief.js';
+
+        // Initialize your elite application modules
+        const careerEngine = new AeroBriefCareer();
+        const flightPlanner = new AeroBriefPlanner();
+
+        // DOM elements mapping
+        const sbInput = document.getElementById('sbUser');
+        const routeStatus = document.getElementById('routeStatus');
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const finesDisplay = document.getElementById('finesDisplay');
+        const logDisplay = document.getElementById('logDisplay');
+        const phaseDisplay = document.getElementById('phaseDisplay');
+        const announcementText = document.getElementById('announcementText');
+        const comfortDisplay = document.getElementById('comfortDisplay');
+
+        // Bind the SimBrief importer directly to your UI button
+        window.importSimBriefData = async function() {
+            const username = sbInput.value;
+            routeStatus.innerHTML = "⏳ Connecting to SimBrief servers...";
+            
+            const flightPlan = await flightPlanner.importFlightPlan(username);
+            
+            if (flightPlan) {
+                routeStatus.innerHTML = `
+                    🟢 <strong>Flight Plan Loaded!</strong><br>
+                    <strong>Callsign:</strong> ${flightPlan.callsign} (${flightPlan.aircraftType})<br>
+                    <strong>Route:</strong> ${flightPlan.originICAO} ➔ ${flightPlan.destinationICAO}<br>
+                    <strong>Cruise:</strong> FL${flightPlan.cruiseAltitudeFL / 100}<br>
+                    <strong>ToD Fix:</strong> ${flightPlan.todWaypoint}
+                `;
+            } else {
+                routeStatus.innerHTML = "❌ Failed to retrieve dispatch data.";
+            }
+        };
+
+        // Simulated telemetry triggers to verify the career calculation architecture
+        window.triggerPhaseTest = function(phase) {
+            if (phase === 'CLIMB') {
+                // Scenario: Pilot climbs past 10,000 feet but is speeding at 280 knots
+                careerEngine.checkPerformanceViolation(9500, 280, 1.0);
+                
+                phaseDisplay.innerText = "CLIMB (Passing 10,000ft)";
+                announcementText.innerHTML = "🎵 <strong>*Boeing Tritone Chime*</strong><br>'Ladies and gentlemen, we have cleared 10,000 feet. You may now use approved electronic devices.'";
+                
+                updateUIElements();
+            } else if (phase === 'DESCENT') {
+                // Scenario: Hard landing at -450 FPM
+                const landingBonus = careerEngine.evaluateLanding(-450);
+                const financialSummary = careerEngine.calculateFinalPaycheck(landingBonus);
+                
+                phaseDisplay.innerText = "LANDING / TAXI-IN";
+                announcementText.innerHTML = "🎵 <strong>*Airbus Two-Tone Chime*</strong><br>'Cabin crew, please secure the cabin for arrival. Welcome to your destination.'";
+                
+                balanceDisplay.innerText = `£${financialSummary.netBankDeposit.toLocaleString()}`;
+                comfortDisplay.innerText = `${financialSummary.passengerSatisfaction}%`;
+                updateUIElements();
+            }
+        };
+
+        function updateUIElements() {
+            finesDisplay.innerText = `£${careerEngine.flightFines.toLocaleString()}`;
+            logDisplay.innerText = careerEngine.flightLog.length > 0 ? careerEngine.flightLog.join(', ') : "None";
+            comfortDisplay.innerText = `${careerEngine.passengerComfort}%`;
+            
+            if (careerEngine.passengerComfort < 80) {
+                comfortDisplay.className = "stat-val val-bad";
+            }
+        }
+    </script>
