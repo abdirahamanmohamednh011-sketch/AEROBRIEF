@@ -255,21 +255,23 @@
                 <strong>AIRLINE TARGET:</strong> <span id="telemetryVA">Ryanair</span><br>
                 <strong>ROUTE WAYPOINTS:</strong> <span id="telemetryRoute">DUB ➔ LCA</span><br>
                 <hr style="border-color:rgba(255,255,255,0.05)">
-                <strong>ALTITUDE CONFIG:</strong> FL360 (36,000FT)<br>
-                <strong>GROUND SPEED IND:</strong> 280 KTS
+                <div id="liveAvionicsHUD">Awaiting cloud telemetry frame array...</div>
             </div>
         </div>
     </div>
     <!-- INTERACTIVE SCRIPTING ENGINE MODULES -->
     <script type="module">
-        class MockHandler { startCabinAmbience() {} triggerCrewAnnouncement() {} initLocalRadar() {} }
-        let audioEngine = new MockHandler();
+        import { initializeFloatingTablet } from './tablet-overlay.js';
+        import { AeroBriefTelemetryReceiver } from './companion-client.js';
+        import { AeroBriefPlanner } from './simbrief.js';
 
-        // Dynamically invoke modules safely
+        const flightPlanner = new AeroBriefPlanner();
+        const liveApiReceiver = new AeroBriefTelemetryReceiver();
+
+        // Boot draggable pilot tablet EFB component safely
         try {
-            const mod1 = await import('./tablet-overlay.js');
-            if (mod1.initializeFloatingTablet) mod1.initializeFloatingTablet("pilotTablet", "tabletDragArea");
-        } catch(e) { console.log("Overlay system ready."); }
+            initializeFloatingTablet("pilotTablet", "tabletDragArea");
+        } catch(e) { console.log("Movable overlay ready."); }
 
         window.switchPage = function(tabId) {
             document.getElementById('hq-tab').style.display = tabId === 'hq-tab' ? 'block' : 'none';
@@ -300,16 +302,38 @@
             logBox.innerText = `>> PARSING DATA LINES FOR: ${username}\n>> INCOMING SYNC OK\n>> ROUTE CODE DETECTED: DUB ➔ LCA\n>> TOP OF DESCENT AUTOMATED ANNOUNCEMENT MARKER INSTALLED IN FLIGHT PROFILE.`;
         };
 
-        // Render FlightRadar24 canvas interface simulator
+        // Real-Time UI Vector Redraw Engine from Infinite Flight Live API v3 Data
+        function processLiveTelemetryUpdate(data) {
+            const hud = document.getElementById('liveAvionicsHUD');
+            if (hud) {
+                hud.innerHTML = `
+                    <strong>ALTITUDE CONFIG:</strong> FL${data.flightLevel} (${data.altitude.toLocaleString()} FT)<br>
+                    <strong>GROUND SPEED:</strong> ${data.groundSpeed} KTS<br>
+                    <strong>GEOGRAPHIC LAT:</strong> ${data.lat}<br>
+                    <strong>GEOGRAPHIC LNG:</strong> ${data.lng}
+                `;
+            }
+            const planeIcon = document.querySelector('#radarMapContainer div div:nth-child(2)');
+            const textLabel = document.querySelector('#radarMapContainer div div:nth-child(3)');
+            if (planeIcon && textLabel) {
+                planeIcon.style.transform = `rotate(${data.heading}deg)`;
+                textLabel.innerHTML = `AB-992<br>FL${data.flightLevel} / ${data.groundSpeed}KT`;
+            }
+        }
+
+        // Render FlightRadar24 canvas interface simulator background elements
         const mapBox = document.getElementById('radarMapContainer');
         if (mapBox) {
             mapBox.innerHTML = `
                 <div style="width:100%; height:100%; position:relative; background:#161c2b;">
-                    <div style="position:absolute; width:100%; height:100%; background-image:linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size:30px 30px;"></div>
+                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; background-image:linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size:30px 30px;"></div>
                     <div style="position:absolute; top:45%; left:50%; font-size:28px; cursor:pointer; filter:drop-shadow(0 2px 5px black);" onclick="switchPage('map-tab')">✈️</div>
                     <div style="position:absolute; top:52%; left:51%; font-size:10px; background:rgba(0,0,0,0.8); padding:3px 6px; border-radius:3px; border:1px solid var(--accent-gold); font-family:'Chalet', sans-serif;">AB-992<br>FL360</div>
                 </div>`;
         }
+
+        // Activate the Live API trace sync listener loop callback instantly
+        liveApiReceiver.initLiveTelemetryStream(processLiveTelemetryUpdate);
     </script>
 </body>
 </html>
