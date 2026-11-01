@@ -1,339 +1,248 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AEROBRIEF Premium Radar & Fleet Manager</title>
+<!-- ====================================================================
+     CHUNK 1 OF 3: RESIZABLE WINDOW MATRIX MECHANICS (index.html CSS)
+     ==================================================================== -->
     <style>
-        :root {
-            --bg-dark: #0b0f19;
-            --panel-bg: rgba(23, 32, 51, 0.85);
-            --card-active: #1d2b45;
-            --accent-gold: #ffcc00;
-            --text-main: #ffffff;
-            --text-muted: #8fa0bd;
-            --border-glow: 1px solid rgba(255, 255, 255, 0.08);
-            --fr24-dark: #161c2b;
-        }
-
-        body {
-            font-family: "Chalet", "Century Gothic", "Apple Gothic", sans-serif;
-            font-weight: bold;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            line-height: 1.4;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #060911;
-            padding: 12px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            z-index: 10;
-        }
-
-        h1 { margin: 0; font-size: 20px; color: var(--text-main); letter-spacing: 2px; }
-        
-        .tab-bar { display: flex; gap: 8px; }
-        .tab-button {
-            background: transparent;
-            color: var(--text-muted);
-            border: 1px solid transparent;
-            padding: 6px 14px;
-            font-family: "Chalet", "Century Gothic", sans-serif;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        .tab-button.active, .tab-button:hover {
-            background: var(--card-active);
-            color: var(--text-main);
-            border: var(--border-glow);
-        }
-
-        /* CORE DESKTOP LAYOUT HUB */
-        .workspace {
-            display: flex;
-            flex: 1;
-            position: relative;
-            height: calc(100vh - 50px);
-        }
-
-        /* SIDEBAR ENTRIES (LEFT PANEL) */
-        .sidebar-container {
-            width: 320px;
-            background: rgba(11, 15, 25, 0.95);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            flex-direction: column;
-            z-index: 5;
-            padding: 15px;
-            box-sizing: border-box;
-            gap: 12px;
-            overflow-y: auto;
-        }
-
-        .flight-row-card {
-            background: var(--panel-bg);
-            border: var(--border-glow);
-            border-radius: 8px;
-            padding: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .flight-row-card:hover, .flight-row-card.active {
-            background: var(--card-active);
-            border-color: var(--accent-gold);
-        }
-
-        .airport-block { font-size: 18px; color: var(--text-main); }
-        .sub-metric { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
-
-        /* FLIGHTRADAR24 FULLSCREEN MAP BACKGROUND */
-        .map-viewport {
-            flex: 1;
-            background: var(--fr24-dark);
-            position: relative;
-        }
-        #radarMapContainer { width: 100%; height: 100%; background: var(--fr24-dark); }
-
-        /* RIGHT POPOUT PROFILE OVERLAY CARD */
-        .right-info-overlay {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 340px;
-            background: var(--panel-bg);
-            border: var(--border-glow);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            z-index: 4;
-            box-sizing: border-box;
-        }
-
-        .overlay-title { font-size: 12px; color: var(--accent-gold); letter-spacing: 1px; margin-bottom: 12px; }
-        .huge-stat { font-size: 28px; margin: 8px 0; color: #27ae60; }
-
-        /* POPUP TABLET DRAWER */
+        /* Modern Floating & Resizable OS-Style Window EFB Tablet Container */
         .floating-tablet {
             position: absolute;
-            top: 150px;
+            top: 120px;
             left: 360px;
-            width: 300px;
+            width: 320px;
+            height: 240px; /* Default baseline execution height */
+            min-width: 200px;
+            min-height: 150px;
+            max-width: 600px;
+            max-height: 500px;
             background: #172033;
             border: 1px solid var(--accent-gold);
             border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            z-index: 100;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: opacity 0.2s, transform 0.2s;
         }
-        .tablet-header { background: var(--card-active); padding: 8px 12px; cursor: move; display: flex; justify-content: space-between; font-size: 11px; }
-        .tablet-body { padding: 12px; font-size: 12px; }
 
-        .input-group { display: flex; gap: 6px; margin-top: 8px; }
-        input { 
-            background: #0b0f19; 
-            border: var(--border-glow); 
-            color: white; 
-            padding: 8px; 
-            font-family: "Chalet", "Century Gothic", sans-serif; 
-            font-size: 12px; 
-            flex: 1; 
+        /* Title Drag bar with Window Operations Interfaces */
+        .tablet-header {
+            background: var(--card-active);
+            padding: 10px 14px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            user-select: none;
         }
-        button { 
-            background: var(--card-active); 
-            border: var(--border-glow); 
-            color: white; 
-            padding: 8px 12px; 
-            font-family: "Chalet", "Century Gothic", sans-serif; 
-            font-weight: bold; 
-            cursor: pointer; 
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
         }
-        button:hover { background: var(--accent-gold); color: black; }
+
+        .win-btn {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: color 0.1s;
+        }
+        .win-btn:hover { color: var(--accent-gold); }
+
+        .tablet-body {
+            padding: 14px;
+            font-size: 12px;
+            flex: 1;
+            overflow-y: auto;
+            color: var(--text-main);
+        }
+
+        /* Tiny Specialized Resizing Corner Handle Grip */
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 16px;
+            height: 16px;
+            cursor: se-resize;
+            background: linear-gradient(135deg, transparent 70%, var(--accent-gold) 70%);
+        }
+
+        /* Mini Floating App Launcher Icon Tray (For when the Pilot targets Minimize) */
+        .efb-launcher-tray {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 999;
+            display: flex;
+            gap: 10px;
+        }
+        .launcher-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--panel-bg);
+            border: 1px solid var(--accent-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .launcher-icon:hover { background: var(--card-active); transform: scale(1.05); }
     </style>
-</head>
-<body>
-
-    <header>
-        <h1>AEROBRIEF // AIRLINE CENTER</h1>
-        <div class="tab-bar">
-            <button class="tab-button active" onclick="switchPage('hq-tab')">[01/HQ]</button>
-            <button class="tab-button" onclick="switchPage('map-tab')">[02/RADAR]</button>
+<!-- ====================================================================
+     CHUNK 2 OF 3: WINDOW OPERATIONS HEADERS & APP TRAYS (index.html Body)
+     ==================================================================== -->
+    <!-- MINIMIZED APP TRAY CONTROLS -->
+    <div class="efb-launcher-tray">
+        <div class="launcher-icon" id="efbAppIcon" style="display: none;" onclick="toggleWindowOperation('RESTORE')" title="Open AEROBRIEF EFB Tablet">
+            📋
         </div>
-    </header>
+    </div>
 
-    <!-- FLOATING PILOT EFB TABLET -->
+    <!-- FLOATING, RESIZABLE PILOT EFB TABLET APP WINDOW -->
     <div class="floating-tablet" id="pilotTablet">
         <div class="tablet-header" id="tabletDragArea">
-            <span>EFB CONTROLS</span>
-            <span style="color:#eb5757; cursor:pointer;" onclick="document.getElementById('pilotTablet').style.display='none'">[X]</span>
+            <span>🗂️ AEROBRIEF PILOT EFB TABLET</span>
+            <div class="window-controls">
+                <span class="win-btn" onclick="toggleWindowOperation('MINIMIZE')" title="Minimize Window">[—]</span>
+                <span class="win-btn" onclick="toggleWindowOperation('MAXIMIZE')" title="Toggle Window Scale">[🗖]</span>
+                <span class="win-btn" onclick="toggleWindowOperation('CLOSE')" style="color: var(--accent-red);" title="Close Window">[X]</span>
+            </div>
         </div>
         <div class="tablet-body">
-            <strong>STARTER AIRCRAFT:</strong>
-            <p style="margin:4px 0 10px 0; color:var(--accent-gold);">🛩️ Piper PA-28 Explorer</p>
-            <button onclick="window.startAudioChannel()" style="width:100%;">BOOT CABIN AUDIO CHAINS</button>
+            <strong>STARTER WORLD EXPLORER FLEET:</strong>
+            <p style="margin:6px 0 12px 0; color:var(--accent-gold);">🛩️ Piper PA-28 Cherokee (1 Assigned)</p>
+            <button onclick="window.startAudioChannel()" style="width:100%; margin-bottom: 10px;">BOOT CABIN AUDIO CHAINS</button>
+            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.05); margin:10px 0;">
+            <small style="color: var(--text-muted); line-height: 1.3; display:block;">
+                >> WINDOW CONFIG: Drag the header to position. Grab the bottom-right corner indicator tab to scale down into a small window layout.
+            </small>
         </div>
+        
+        <!-- Physical Resizing Handle Anchor Grip Node -->
+        <div class="resize-handle" id="tabletResizeHandle"></div>
     </div>
+// tablet-overlay.js - Floating Drag, Drop, & Resize OS Window Controller for AEROBRIEF
 
-    <div class="workspace">
-        <!-- SIDEBAR FLIGHT LOG ENTRIES (MATCHING PREVIEW LAYOUT) -->
-        <div class="sidebar-container">
-            <div style="font-size:11px; color:var(--text-muted); letter-spacing:1px; margin-bottom:4px;">ACTIVE DISPATCH LINES</div>
-            
-            <div class="flight-row-card active" onclick="selectFlightRow('DUB', 'LCA', 'AB-992', 'Ryanair')">
-                <div>
-                    <div class="airport-block">DUB ➔ LCA</div>
-                    <div class="sub-metric">Ryanair • AB-992</div>
-                </div>
-                <div style="color:var(--accent-gold); text-align:right;">B738<br><span style="font-size:10px; color:#27ae60;">ACTIVE</span></div>
-            </div>
+export function initializeFloatingTablet(tabletId, dragHeaderId) {
+    const tablet = document.getElementById(tabletId);
+    const header = document.getElementById(dragHeaderId);
+    const resizeHandle = document.getElementById("tabletResizeHandle");
+    const appIcon = document.getElementById("efbAppIcon");
+    
+    if (!tablet || !header || !resizeHandle) return;
 
-            <div class="flight-row-card" onclick="selectFlightRow('SOF', 'PEK', 'TK-441', 'Turkish')">
-                <div>
-                    <div class="airport-block">SOF ➔ PEK</div>
-                    <div class="sub-metric">Turkish Air • TK-441</div>
-                </div>
-                <div style="color:var(--text-muted); text-align:right;">A35K<br><span style="font-size:10px;">ENROUTE</span></div>
-            </div>
+    let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
+    let isMaximized = false;
+    let savedDimensions = { top: "150px", left: "360px", width: "320px", height: "240px" };
 
-            <div class="flight-row-card" onclick="selectFlightRow('NCE', 'TBS', 'AF-108', 'AirFrance')">
-                <div>
-                    <div class="airport-block">NCE ➔ TBS</div>
-                    <div class="sub-metric">Air France • AF-108</div>
-                </div>
-                <div style="color:var(--text-muted); text-align:right;">A320<br><span style="font-size:10px;">STANDBY</span></div>
-            </div>
-        </div>
+    // ==========================================
+    // MODULE FLOW 1: DRAG & POSITION CHANNELS
+    // ==========================================
+    header.onmousedown = dragMouseDown;
 
-        <!-- FULLSCREEN MAP VIEWPORT -->
-        <div class="map-viewport">
-            <div id="radarMapContainer"></div>
-        </div>
+    function dragMouseDown(e) {
+        if (isMaximized) return; // Prevent dragging while expanded full-screen
+        e.preventDefault();
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
 
-        <!-- RIGHT AREA: BALANCES & PAYROLL PROFILE CARDS -->
-        <div class="right-info-overlay" id="hq-tab">
-            <div class="overlay-title">01 // CORPORATE VA ACCOUNTING</div>
-            <div>AIRLINE RESERVES SYSTEM VAULT:</div>
-            <div class="huge-stat" id="vaVaultDisplay">£500,000.00</div>
-            
-            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.05); margin:15px 0;">
-            
-            <div class="overlay-title">02 // PILOT MONTHLY PAYROLL GUARANTEE</div>
-            <div>CURRENT BANK BALANCE:</div>
-            <div style="font-size:22px; font-weight:bold; margin-top:5px;" id="balanceDisplay">£10,000.00</div>
-            
-            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.05); margin:15px 0;">
-            
-            <div class="overlay-title">03 // INCOMING NETWORK DATA LINK</div>
-            <div class="input-group">
-                <input type="text" id="sbUser" placeholder="ENTER SIMBRIEF PILOT ID">
-                <button onclick="importSimBriefData()">SYNC FP</button>
-            </div>
-            <pre id="routeStatus" style="font-size:10px; margin-top:10px; white-space:pre-wrap; color:var(--text-muted);">AWAITING LINK CONNECTION REQUEST...</pre>
-        </div>
+    function elementDrag(e) {
+        e.preventDefault();
+        posX = mouseX - e.clientX;
+        posY = mouseY - e.clientY;
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        
+        tablet.style.top = (tablet.offsetTop - posY) + "px";
+        tablet.style.left = (tablet.offsetLeft - posX) + "px";
+    }
 
-        <!-- HIDDEN RADAR TELEMETRY OVERLAY CARD -->
-        <div class="right-info-overlay" id="map-tab" style="display:none;">
-            <div class="overlay-title">04 // INTERACTIVE ATC SYSTEM TELEMETRY</div>
-            <div style="background:#0b0f19; padding:12px; border-radius:6px; font-size:12px; line-height:1.6;">
-                <strong>SELECTED TRACKING:</strong> <span id="telemetryCallsign" style="color:var(--accent-gold);">AB-992</span><br>
-                <strong>AIRLINE TARGET:</strong> <span id="telemetryVA">Ryanair</span><br>
-                <strong>ROUTE WAYPOINTS:</strong> <span id="telemetryRoute">DUB ➔ LCA</span><br>
-                <hr style="border-color:rgba(255,255,255,0.05)">
-                <div id="liveAvionicsHUD">Awaiting cloud telemetry frame array...</div>
-            </div>
-        </div>
-    </div>
-    <!-- INTERACTIVE SCRIPTING ENGINE MODULES -->
-    <script type="module">
-        import { initializeFloatingTablet } from './tablet-overlay.js';
-        import { AeroBriefTelemetryReceiver } from './companion-client.js';
-        import { AeroBriefPlanner } from './simbrief.js';
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
 
-        const flightPlanner = new AeroBriefPlanner();
-        const liveApiReceiver = new AeroBriefTelemetryReceiver();
+    // ==========================================
+    // MODULE FLOW 2: RESIZE WINDOW MATRIX
+    // ==========================================
+    resizeHandle.onmousedown = initResize;
 
-        // Boot draggable pilot tablet EFB component safely
-        try {
-            initializeFloatingTablet("pilotTablet", "tabletDragArea");
-        } catch(e) { console.log("Movable overlay ready."); }
+    function initResize(e) {
+        e.preventDefault();
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        document.onmouseup = stopResize;
+        document.onmousemove = resizeDrag;
+    }
 
-        window.switchPage = function(tabId) {
-            document.getElementById('hq-tab').style.display = tabId === 'hq-tab' ? 'block' : 'none';
-            document.getElementById('map-tab').style.display = tabId === 'map-tab' ? 'block' : 'none';
-            
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-        };
+    function resizeDrag(e) {
+        e.preventDefault();
+        const widthDelta = e.clientX - mouseX;
+        const heightDelta = e.clientY - mouseY;
+        mouseX = e.clientX;
+        mouseY = e.clientY;
 
-        window.selectFlightRow = function(origin, dest, callsign, airline) {
-            document.querySelectorAll('.flight-row-card').forEach(card => card.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            
-            document.getElementById('telemetryCallsign').innerText = callsign;
-            document.getElementById('telemetryVA').innerText = airline;
-            document.getElementById('telemetryRoute').innerText = `${origin} ➔ ${dest}`;
-        };
+        const currentWidth = parseInt(document.defaultView.getComputedStyle(tablet).width);
+        const currentHeight = parseInt(document.defaultView.getComputedStyle(tablet).height);
 
-        window.startAudioChannel = function() {
-            alert("🔊 AEROBRIEF Subsystem Diagnostic:\nAudio channels active. Cabin background loops initialized hands-free.");
-        };
+        tablet.style.width = (currentWidth + widthDelta) + "px";
+        tablet.style.height = (currentHeight + heightDelta) + "px";
+    }
 
-        window.importSimBriefData = async function() {
-            const username = document.getElementById('sbUser').value;
-            const logBox = document.getElementById('routeStatus');
-            if(!username) return alert("SPECIFY AIRLINE PILOT USERNAME STRING FIRST.");
-            
-            logBox.innerText = `>> PARSING DATA LINES FOR: ${username}\n>> INCOMING SYNC OK\n>> ROUTE CODE DETECTED: DUB ➔ LCA\n>> TOP OF DESCENT AUTOMATED ANNOUNCEMENT MARKER INSTALLED IN FLIGHT PROFILE.`;
-        };
+    function stopResize() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
 
-        // Real-Time UI Vector Redraw Engine from Infinite Flight Live API v3 Data
-        function processLiveTelemetryUpdate(data) {
-            const hud = document.getElementById('liveAvionicsHUD');
-            if (hud) {
-                hud.innerHTML = `
-                    <strong>ALTITUDE CONFIG:</strong> FL${data.flightLevel} (${data.altitude.toLocaleString()} FT)<br>
-                    <strong>GROUND SPEED:</strong> ${data.groundSpeed} KTS<br>
-                    <strong>GEOGRAPHIC LAT:</strong> ${data.lat}<br>
-                    <strong>GEOGRAPHIC LNG:</strong> ${data.lng}
-                `;
-            }
-            const planeIcon = document.querySelector('#radarMapContainer div div:nth-child(2)');
-            const textLabel = document.querySelector('#radarMapContainer div div:nth-child(3)');
-            if (planeIcon && textLabel) {
-                planeIcon.style.transform = `rotate(${data.heading}deg)`;
-                textLabel.innerHTML = `AB-992<br>FL${data.flightLevel} / ${data.groundSpeed}KT`;
+    // ==========================================
+    // MODULE FLOW 3: WINDOW OPERATIONS CONTROLS
+    // ==========================================
+    window.toggleWindowOperation = function(action) {
+        if (action === 'MINIMIZE') {
+            tablet.style.display = 'none';
+            if (appIcon) appIcon.style.display = 'flex';
+            console.log("[EFB WINDOW] App window minimized to background task tray.");
+        } 
+        else if (action === 'RESTORE') {
+            tablet.style.display = 'flex';
+            if (appIcon) appIcon.style.display = 'none';
+        }
+        else if (action === 'CLOSE') {
+            tablet.style.display = 'none';
+            if (appIcon) appIcon.style.display = 'none';
+        }
+        else if (action === 'MAXIMIZE') {
+            if (!isMaximized) {
+                // Archive dimensions before maximizing
+                savedDimensions = {
+                    top: tablet.style.top,
+                    left: tablet.style.left,
+                    width: tablet.style.width,
+                    height: tablet.style.height
+                };
+                tablet.style.top = "50px";
+                tablet.style.left = "0px";
+                tablet.style.width = "100vw";
+                tablet.style.height = "calc(100vh - 50px)";
+                isMaximized = true;
+            } else {
+                // Restore previous small window parameters
+                tablet.style.top = savedDimensions.top;
+                tablet.style.left = savedDimensions.left;
+                tablet.style.width = savedDimensions.width;
+                tablet.style.height = savedDimensions.height;
+                isMaximized = false;
             }
         }
-
-        // Render FlightRadar24 canvas interface simulator background elements
-        const mapBox = document.getElementById('radarMapContainer');
-        if (mapBox) {
-            mapBox.innerHTML = `
-                <div style="width:100%; height:100%; position:relative; background:#161c2b;">
-                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; background-image:linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size:30px 30px;"></div>
-                    <div style="position:absolute; top:45%; left:50%; font-size:28px; cursor:pointer; filter:drop-shadow(0 2px 5px black);" onclick="switchPage('map-tab')">✈️</div>
-                    <div style="position:absolute; top:52%; left:51%; font-size:10px; background:rgba(0,0,0,0.8); padding:3px 6px; border-radius:3px; border:1px solid var(--accent-gold); font-family:'Chalet', sans-serif;">AB-992<br>FL360</div>
-                </div>`;
-        }
-
-        // Activate the Live API trace sync listener loop callback instantly
-        liveApiReceiver.initLiveTelemetryStream(processLiveTelemetryUpdate);
-    </script>
-</body>
-</html>
+    };
+}
